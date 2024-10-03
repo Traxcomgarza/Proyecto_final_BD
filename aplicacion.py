@@ -1,7 +1,8 @@
 #instalacion de librerias necesarias
 #pip install mysql-connector-python
 #pip install pymysql
-
+import re
+from datetime import datetime
 import pymysql
 import tkinter as tk
 from tkinter import messagebox
@@ -15,21 +16,148 @@ conn = mysql.connector.connect(
     database='citasmedicas')
 #comprobacion de que la conexion funciona
 
-cursor = conn.cursor()
+"""cursor = conn.cursor()
 cursor.execute("SELECT * FROM paciente_datos_personales")
 resultados = cursor.fetchall()
 for x in resultados:
-  print(x)
+  print(x)"""
+
+def validarCurp(Curp):
+    while True:
+        if len(Curp) !=18:
+            print("Error, no se capturo correctamente el curp")
+            Curp = input("Por favor, ingrese su curp:").upper()
+        else:
+            break
+    return Curp
+                
+def validarTcelular(Tcelular):
+    while True:
+        if len(Tcelular) != 10 or not Tcelular.isdigit() :
+            #probando if lo comente para tratar de reducirlo y solucionar error
+            # if not Tcelular.isdigit():
+            print("Error, no se capturo correctamente el celular, asegurese de que sean 10 digitos")
+            Tcelular = input("Por favor, ingrese su telefono celular:")
+        else:
+            break
+    return Tcelular
+def validarCorreo(Correo):
+    signos = re.compile(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-z]{1,3}$")
+    while True:
+        if not signos.match(Correo):
+            print("Error, el correo no tiene un formato valido")
+            Correo = input("Por favor, ingrese su correo electronico:")
+        else:
+            break
+    return Correo
+
+def validarFecha(fecha):
+     while True:
+        try:
+            fecha_validacion = datetime.strptime(fecha, "%Y-%m-%d")
+            return fecha_validacion
+        except ValueError:
+            print("Fecha inválida. Por favor, ingrese una fecha en formato YYYY-MM-DD.")
+            fecha = input("Ingresa una fecha tipo YYYY-MM-DD: ")
+                       
+def Paciente():
+    print("""
+-----Registre sus datos-----
+1.Nombres
+2.Apellido Paterno
+3.Apellido Materno
+4.Curp
+5.Telefono celular
+6.Correo Electronico
+7.fecha de nacimiento
+8.fecha de cita
+9.hora de cita
+10.sexo (H o M)
+11.observaciones
+        """)
+    #12-id_formulario int auto_increment primary key
+    while True:
+        
+        
+        print("Puedes escribir salir en la siguiente pregunta para salir ")
+        Nombres = input("Por favor, ingrese sus nombres:")
+        if Nombres.lower()=="salir":
+            print("Saliendo...")
+            return
+        Apaterno = input("Por favor, ingrese su apellido paterno: ")
+        Amaterno = input("Por favor, ingrese su apellido materno: ")
+        Nombres_Format=Nombres.replace(" ","")
+        if not Nombres_Format.isalpha() or not Apaterno.isalpha() or not Amaterno.isalpha():
+            print("Error, verifica que la informacion ingresada contenga solo letras y los apellidos sin espacios")
+            continue
+        #Validar la longitud-----*
+        Curp = input("Por favor, ingrese su curp:").upper()
+        Curp_validacion=validarCurp(Curp)
+        
+        Tcelular = input("Por favor, ingrese su telefono celular:")
+        Tcelular_validacion=validarTcelular(Tcelular)
+        Correo = input("Por favor, ingrese su correo electronico:")
+        Correo_validacion= validarCorreo(Correo)
+        
+        fecha = input("Ingresa una fecha tipo YYYY-MM-DD:")
+        fecha_validacion = validarFecha(fecha)
+        
+        
+        #Fechas para agendar cita
+    
+        print("------------------------------")
+        print("Se muestran tus datos ingresados")
+        print(f"CURP: {Curp_validacion}")
+        print(f"Nombres: {Nombres}")
+        print(f"Apellido Paterno: {Apaterno}")
+        print(f"Apellido Materno: {Amaterno}")
+        print(f"Teléfono: {Tcelular_validacion}")
+        print(f"Correo Electrónico:{Correo_validacion}")
+        print(f"Fecha cita:  {fecha_validacion}")
+
+        # print(listaPacientes)
+        print("------------------------------")
+        break
+
+def menuPrincipal():
+    while True:
+      
+        print(
+            """
+Bienvenido al sistema de citas médicas
+“Por favor, identifícate”
+Paciente (Agendar una cita)
+Médico (Entrar al portal)
+
+            """
+        )
+        print ("1 ) Paciente")
+        print ("2 ) Doctor")
+        print ("3 ) Salir")
+
+        opcion = input("Ingrese la opcion que desea\n")
+
+        if opcion == "1":
+            Paciente()
+        elif opcion == "2":
+            Doctor()
+        elif opcion == "3":
+            
+            print("Gracias Por usar el sistema de citas, que tenga un buen dia!")
+            break
+        else:
+            print("-----------------------------")
+            print("Opcion NO valida, favor de intentar de nuevo!")
 
 
-def create_paciente():
+menuPrincipal() 
+
+
+
+
+"""def create_paciente():
     #se agregan los datos del formulario
-    nombre = nombre_entry.get()
-    apellido_paterno = apellido_paterno_entry.get()
-    apellido_materno = apellido_materno_entry.get()
-    telefono = telefono_entry.get()
-    correoe = correoe_entry.get()
-    fnacimiento = fnacimiento_entry.get()
+ 
 
     query = "INSERT INTO paciente_datos_personales (nombre, apellido_paterno, apellido_materno, telefono, correoe, fnacimiento) VALUES (%s, %s, %s, %s, %s, %s)"
     cursor.execute(query, (nombre, apellido_paterno, apellido_materno, telefono, correoe, fnacimiento))
@@ -46,12 +174,7 @@ def read_paciente():
 
 def update_paciente():
     #se agregan los datos del formulario
-    nombre = nombre_entry.get()
-    apellido_paterno = apellido_paterno_entry.get()
-    apellido_materno = apellido_materno_entry.get()
-    telefono = telefono_entry.get()
-    correoe = correoe_entry.get()
-    fnacimiento = fnacimiento_entry.get()
+    
 
     query = "UPDATE paciente SET nombre = %s, apellido_paterno = %s, apellido_materno = %s, telefono = %s, correoe = %s, fnacimiento = %s WHERE nombre = %s"
     cursor.execute(query, (nombre, apellido_paterno, apellido_materno, telefono, correoe, fnacimiento, nombre))
@@ -60,63 +183,11 @@ def update_paciente():
 
 def delete_paciente():
     #se agregan los datos del formulario
-    nombre = nombre_entry.get()
+    nombre = nombre_datos()
 
     query = "DELETE FROM paciente WHERE nombre = %s"
     cursor.execute(query, (nombre,))
     conn.commit()
     messagebox.showinfo("Paciente eliminado con éxito")    
-    
-# Crear interfaz gráfica de usuario
-root = tk.Tk()
-root.title("CRUD Pacientes")
+"""
 
-# Crear etiquetas y entradas de texto
-nombre_label = tk.Label(root, text="Nombre:")
-nombre_label.grid(row=0, column=0)
-nombre_entry = tk.Entry(root)
-nombre_entry.grid(row=0, column=1)
-
-apellido_paterno_label = tk.Label(root, text="Apellido Paterno:")
-apellido_paterno_label.grid(row=1, column=0)
-apellido_paterno_entry = tk.Entry(root)
-apellido_paterno_entry.grid(row=1, column=1)
-
-apellido_materno_label = tk.Label(root, text="Apellido Materno:")
-apellido_materno_label.grid(row=2, column=0)
-apellido_materno_entry = tk.Entry(root)
-apellido_materno_entry.grid(row=2, column=1)
-
-telefono_label = tk.Label(root, text="Teléfono:")
-telefono_label.grid(row=3, column=0)
-telefono_entry = tk.Entry(root)
-telefono_entry.grid(row=3, column=1)
-
-correoe_label = tk.Label(root, text="Correo electrónico:")
-correoe_label.grid(row=4, column=0)
-correoe_entry = tk.Entry(root)
-correoe_entry.grid(row=4, column=1)
-
-fnacimiento_label = tk.Label(root, text="Fecha de nacimiento:")
-fnacimiento_label.grid(row=5, column=0)
-fnacimiento_entry = tk.Entry(root)
-fnacimiento_entry.grid (row=5, column=1)
-boton_crear = tk.Button(root, text="Ingresar paciente")
-boton_crear.grid(row=6, column=0)
-
-boton_leer = tk.Button(root, text="Leer")
-boton_leer.grid(row=6, column=1)
-
-boton_actualizar = tk.Button(root, text="Actualizar")
-boton_actualizar.grid(row=7, column=0)
-
-boton_eliminar = tk.Button(root, text="Eliminar")
-boton_eliminar.grid(row=7, column=1)
-
-boton_crear.config(command=create_paciente)
-boton_leer.config(command=read_paciente)
-boton_actualizar.config(command=update_paciente)
-boton_eliminar.config(command=delete_paciente)
-
-root.mainloop()
-conn.close()
